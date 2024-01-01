@@ -13,6 +13,7 @@ user1 = UserClass("John", 36) # クラスのインスタンス化 init関数のn
 user1.say_hello()
 
 # practice numpy
+# numpyは配列や行列などのテンソルの計算を効率的に行うためのライブラリ
 print("\n Practice numpy" )
 import numpy as np # numpyのインポート
 
@@ -61,6 +62,24 @@ print(A[np.array([0, 2, 3])]) # １次元配列の特定の要素を取得
 print()
 print(A > 6) # 条件が合う要素をTrueで返す
 print(A[A > 6]) # 条件があう要素を取得
+
+# practice matplotlib
+# matplotlibはグラフや図の描画を行うライブラリ
+import numpy as np
+import matplotlib.pyplot as plt
+
+print("\n Practice matplotlib")
+x = np.arange(0, 6, 0.1) # 0から6まで0.1刻みで生成
+y1 = np.sin(x) # sin関数を適用
+y2 = np.cos(x) # tan関数を適用
+
+plt.plot(x, y1, label="sin") # plot関数でグラフを描画
+plt.plot(x, y2, linestyle= "--", label="cos")
+plt.xlabel("x") # 軸のラベルが表示される
+plt.ylabel("y")
+plt.title("sin & cos") # タイトルを表示
+plt.legend() # 凡例を表示
+plt.show() # 画像に出力
 
 
 
