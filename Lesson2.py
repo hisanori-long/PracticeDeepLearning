@@ -79,8 +79,8 @@ print(NAND_bias(0, 0))
 
 def OR_bias(x1, x2):
     x = np.array([x1, x2])
-    w = np.array([-0.3, -0.3])
-    b = 0.2
+    w = np.array([0.3, 0.3])
+    b = -0.2
     tmp = np.sum(x * w) + b
     if tmp <= 0:
         return 0
@@ -92,6 +92,18 @@ print(OR_bias(1, 1))
 print(OR_bias(1, 0))
 print(OR_bias(0, 1))
 print(OR_bias(0, 0))
+
+def XOR(x1, x2):
+    s1 = OR_bias(x1, x2)
+    s2 = NAND_bias(x1, x2)
+    y = AND_bias(s1, s2)
+    return y
+
+print("\n XOR gate perceptron using bias")
+print(XOR(1, 1))
+print(XOR(1, 0))
+print(XOR(0, 1))
+print(XOR(0, 0))
 
 
     
