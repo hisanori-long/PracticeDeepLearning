@@ -53,7 +53,7 @@ print(A1)
 print(Z1)
 
 W2 = np.array([[0.3, 0.7],[1.0, 0.7],[0.8, 0.2]]) #２層目の重み（3 * 2行列）
-B2 = np.array([0.1, 0.2]) # ３層目のバイアス（1 * 2行列）
+B2 = np.array([0.1, 0.2]) # ２層目のバイアス（1 * 2行列）
 
 print(Z1.shape)
 print(W2.shape)
@@ -65,20 +65,54 @@ Z2 = sigmoid(A2) # 第２層（1 * 2行列）
 print(A2)
 print(Z2)
 
-#恒等関数
+#恒等関数（今回はそのまま返す）
 def identity_function(x):
     return x
 
-W3 = np.array([[0.3, 0.5],[0.1, 0.4]])
-B3 = np.array([0.1, 0.3])
+W3 = np.array([[0.3, 0.5],[0.1, 0.4]]) # ３層目の重み（2 * 2行列）
+B3 = np.array([0.1, 0.3]) # 3層目のバイアス（1 * 2行列）
 
 print(Z2.shape)
 print(W3.shape)
 print(B3.shape)
 
-A3 = np.dot(Z2, W3) + B3
-Z3 = identity_function(A3)
+A3 = np.dot(Z2, W3) + B3 # 重み付き信号とバイアスの総和
+Z3 = identity_function(A3) #出力層（1 * 2行列）
 
 print(A3)
 print(Z3)
+
+#先ほどのニューラルネットワークを見やすくする
+print("\n 簡潔にしたニューラルネットワーク")
+# 各層の重みとバイアスを定義
+def init_network():
+    network = {}
+    network['W1'] = np.array([[0.1, 0.3, 0.4], [0.5, 1.0, 0.2]])
+    network['B1'] = np.array([0.1, 0.2, 0.3])
+    network['W2'] = np.array([[0.3, 0.7],[1.0, 0.7],[0.8, 0.2]])
+    network['B2'] = np.array([0.1, 0.2])
+    network['W3'] = np.array([[0.3, 0.5],[0.1, 0.4]])
+    network['B3'] = np.array([0.1, 0.3])
+
+    return network
+
+# 各層を求める（入力から出力にかけて計算するため、forward）
+def forward(network, x):
+    w1, w2, w3 = network['W1'], network['W2'], network['W3']
+    b1, b2, b3 = network['B1'], network['B2'], network['B3']
+
+    a1 = np.dot(x, w1) + b1
+    z1 = sigmoid(a1)
+    a2 = np.dot(z1, w2) + b2
+    z2 = sigmoid(a2)
+    a3 = np.dot(z2, w3) + b3
+    y = identity_function(a3)
+
+    return y
+
+network = init_network()
+x = np.array([1.0, 0.5]) 
+y = forward(network, x)
+print(y)
+
 
