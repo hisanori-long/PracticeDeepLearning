@@ -116,10 +116,3 @@ y = forward(network, x)
 print(y)
 
 
-# ソフトマックス関数
-def softmax(a):
-    c = np.max(a)
-    exp_a = np.exp(a - c) # 各入力を指数関数でとる（a - c で値が大きくなり、オーバーフローを起こすのを防ぐ）
-    sum_exp_a = np.sum(exp_a) # 指数関数でとった入力の総和
-    y = exp_a / sum_exp_a # 各入力を総和で割る
-    return y
