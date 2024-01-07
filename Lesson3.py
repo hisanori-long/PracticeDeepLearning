@@ -124,3 +124,24 @@ def softmax(a):
     y = exp_a / sum_exp_a # 各入力を総和で割る
     return y
 
+
+#手書き数字認識
+import sys, os
+sys.path.append('../deep-learning-from-scratch-master') # 親ディレクトリのファイルをインポートするための設定
+from sklearn.datasets import load_digits # sklearnを使用して、mnistのデータセットを使用
+from sklearn.model_selection import train_test_split # sklearnを使用して、データセットを訓練データとテストデータに分割
+# from dataset.mnist import load_mnist
+
+#データの取得、格納
+digits = load_digits()
+data = digits.data
+target = digits.target
+
+# データの分割
+x_train, x_test, t_train, t_test = train_test_split(data, target, test_size=0.2, random_state=0)
+
+#データの表示
+print(x_train.shape)
+print(t_train.shape)
+print(x_test.shape)
+print(t_test.shape)
