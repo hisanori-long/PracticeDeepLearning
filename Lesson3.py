@@ -140,6 +140,12 @@ target = digits.target
 # データの分割
 x_train, x_test, t_train, t_test = train_test_split(data, target, test_size=0.2, random_state=0)
 
+# データの正規化
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+t_train = t_train / 255.0
+t_test = t_test / 255.0
+
 #データの表示
 print(x_train.shape)
 print(t_train.shape)
