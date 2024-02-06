@@ -1,6 +1,8 @@
 # newral network
 import numpy as np
 import matplotlib.pylab as plt
+import sys, os
+from PIL import Image
 
 # ステップ関数
 # パーセプトロンでは、ステップ関数を活性化関数として使用
@@ -151,3 +153,16 @@ print(x_train.shape)
 print(t_train.shape)
 print(x_test.shape)
 print(t_test.shape)
+
+sys.path.append(os.pardir)  # 親ディレクトリのファイルをインポートするための設定
+def img_show(img):
+    pil_img = Image.fromarray(np.uint8(img))
+    pil_img.show()
+
+img = x_train[0]
+label = t_train[0]
+print(label)
+print(img.shape)
+img = img.reshape(8, 8)
+print(img.shape)
+img_show(img)
