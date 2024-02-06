@@ -154,6 +154,7 @@ print(t_train.shape)
 print(x_test.shape)
 print(t_test.shape)
 
+# 画像の表示
 sys.path.append(os.pardir)  # 親ディレクトリのファイルをインポートするための設定
 def img_show(img):
     pil_img = Image.fromarray(np.uint8(img))
@@ -165,4 +166,14 @@ print(label)
 print(img.shape)
 img = img.reshape(8, 8)
 print(img.shape)
-img_show(img)
+# img_show(img)
+
+print("")
+
+# ニューラルネットワークの実装 
+
+# データを取得
+def get_data():
+    digits = load_digits()
+    x_train, x_test, t_train, t_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=0)
+    return x_test, t_test
