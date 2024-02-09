@@ -40,3 +40,20 @@ dapple_price, dtax = mul_tax_layer.backward(dprice)
 dapple, dapple_num = mul_apple_layer.backward(dapple_price)
 
 print('dapple: {}, dapple_num: {}, dtax:{}'.format(dapple, dapple_num, dtax))
+
+
+"""
+加算レイヤ
+"""
+class AddLayer:
+    def __init__(self):
+        pass
+
+    def forward(self, x, y):
+        out = x + y
+        return out
+    
+    def backward(self, dout):
+        dx = dout * 1
+        dy = dout * 2
+        return dx, dy
