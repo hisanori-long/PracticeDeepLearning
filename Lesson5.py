@@ -85,3 +85,23 @@ dapple, dapple_num = mul_apple_layer.backward(dapple_price)
 
 print('price: ', price)
 print("dapple_num:{}, dapple:{}, dorange:{}, dorange_num:{}, dtax:{}".format(dapple_num, dapple, dorange, dorange_num, dtax))
+
+"""
+ReLUレイヤ
+"""
+class ReLu:
+    def __init__(self):
+        self.mask = None
+    
+    def forward(self, x):
+        self.mask = (x <= 0) # xの各要素が0以下の場合はTrue, 0より大きい場合はFalseを返す
+        out = x.copy()
+        out[self.maxk] = 0 # xの各要素が0の時は0を渡し、それ以外はそのまま渡す
+
+        return out
+    
+    def backward(self, dout):
+        dout[self.mask] = 0 # forwardで0を渡した要素は、backでも0を渡す
+        dx = dout
+
+        return dx
