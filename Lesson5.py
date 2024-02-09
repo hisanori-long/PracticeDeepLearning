@@ -1,5 +1,11 @@
+import sys, os
+sys.path.append(os.pardir)
 import numpy as np
 from Lesson4 import softmax, cross_entropy_error
+from common.layers import *
+from common.gradient import numerical_gradient
+from collections import OrderedDict
+from dataset.mnist import load_mnist
 
 """
 乗算レイヤ
@@ -99,7 +105,7 @@ class ReLu:
     def forward(self, x):
         self.mask = (x <= 0) # xの各要素が0以下の場合はTrue, 0より大きい場合はFalseを返す
         out = x.copy()
-        out[self.maxk] = 0 # xの各要素が0の時は0を渡し、それ以外はそのまま渡す
+        out[self.mask] = 0 # xの各要素が0の時は0を渡し、それ以外はそのまま渡す
 
         return out
     
@@ -172,3 +178,133 @@ class SoftmaxWithLoss:
         dx = (self.y - self.t) / batch_size
 
         return dx
+    
+"""
+誤差逆伝播法の実装
+"""
+class TwoLayerNet:
+    def __init__(self, input_size, hidden_size, output_size, weight_init_std=0.01):
+        # 重みの初期化
+        self.params = {}
+        self.params['W1'] = weight_init_std * np.random.randn(input_size, hidden_size)
+        self.params['b1'] = np.zeros(hidden_size)
+        self.params['W2'] = weight_init_std * np.random.randn(hidden_size, output_size)
+        self.params['b2'] = np.zeros(output_size)
+
+        # レイヤの生成
+        self.Layers = OrderedDict() # 順番付きディクショナリ
+        self.Layers['Affine1'] = Affine(self.params['W1'], self.params['b1'])
+        self.Layers['Relu1'] = ReLu()
+        self.Layers['Affine2'] = Affine(self.params['W2'], self.params['b2'])
+        self.lastLayer = SoftmaxWithLoss()
+
+    def predict(self, x):
+        for layer in self.Layers.values():
+            x = layer.forward(x)
+            
+        return x
+        
+    def loss(self, x, t):
+        y = self.predict(x)
+        return self.lastLayer.forward(y, t)
+    
+    
+    def accuracy(self, x, t):
+        y = self.predict(x)
+        y = np.argmax(y, axis = 1) # 正規化はいらないので、argmaxで最大値のインデックスを取得
+        if t.ndim != 1 : t = np.argmax(t, axis=1) # 教師データがone-hot-vectorの場合は、正解ラベルのインデックスに変換
+
+        accuracy = np.sum(y == t) / float(x.shape[0])
+        return accuracy
+    
+    def numerical_gradient(self, x, t):
+        loss_W = lambda W: self.loss(x, t)
+
+        grads = {}
+        grads['W1'] = numerical_gradient(loss_W, self.params['W1'])
+        grads['b1'] = numerical_gradient(loss_W, self.params['b1'])
+        grads['W2'] = numerical_gradient(loss_W, self.params['W2'])
+        grads['b2'] = numerical_gradient(loss_W, self.params['b2'])
+
+        return grads
+    
+    def gradient(self, x, t):
+        # forward
+        self.loss(x, t)
+
+        # backward
+        dout = 1
+        dout = self.lastLayer.backward(dout)
+
+        layers = list(self.Layers.values())
+        layers.reverse() # forwardの逆の順にレイヤを取得
+        for layer in layers:
+            dout = layer.backward(dout)
+
+        grads = {}
+        grads['W1'] = self.Layers['Affine1'].dW
+        grads['b1'] = self.Layers['Affine1'].db
+        grads['W2'] = self.Layers['Affine2'].dW
+        grads['b2'] = self.Layers['Affine2'].db
+
+        return grads
+    
+"""
+誤差逆伝播法の正しさを確認する（数値微分と解析的な勾配を比較する）
+"""
+# データの読み込み
+(x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, one_hot_label=True)
+
+network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+
+x_batch = x_train[:3]
+t_batch = t_train[:3]
+
+grad_numerical = network.numerical_gradient(x_batch, t_batch)
+grad_backprop = network.gradient(x_batch, t_batch)
+
+# 各重みの絶対誤差の平均を求める
+for key in grad_numerical.keys():
+    diff = np.average(np.abs(grad_backprop[key] - grad_numerical[key]))
+    print(key + ':' + str(diff))
+
+"""
+誤差逆伝播法を使って学習
+"""
+(x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, one_hot_label=True)
+
+network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+
+iters_num = 10000
+train_size = x_train.shape[0]
+
+batch_size = 100
+learning_rate = 0.1
+
+train_loss_list = []
+train_acc_list = []
+test_acc_list = []
+
+iter_per_epoch = max(train_size / batch_size, 1)
+
+for i in range(iters_num):
+    batch_mask = np.random.choice(train_size, batch_size)
+    x_batch = x_train[batch_mask]
+    t_batch = t_train[batch_mask]
+
+    # 誤差逆伝播法によって勾配を求める
+    grad = network.gradient(x_batch, t_batch)
+
+    # 更新
+    for key in ('W1', 'b1', 'W2', 'b2'):
+        network.params[key] -= learning_rate * grad[key]
+
+    loss = network.loss(x_batch, t_batch)
+    train_loss_list.append(loss)
+
+    if i % iter_per_epoch == 0:
+        train_acc = network.accuracy(x_train, t_train)
+        test_acc = network.accuracy(x_test, t_test)
+        train_acc_list.append(train_acc)
+        test_acc_list.append(test_acc)
+        print(train_acc, test_acc)
