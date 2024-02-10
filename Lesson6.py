@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dataset.mnist import load_mnist
 from common.multi_layer_net import MultiLayerNet
+from common.util import shuffle_dataset
 
 """
 Momentum
@@ -98,25 +99,25 @@ test_acc_list = []
 iter_per_epoch = max(train_size / batch_size, 1)
 epoch_cnt = 0
 
-for i in range(1000000000):
-    batch_mask = np.random.choice(train_size, batch_size)
-    x_batch = x_train[batch_mask]
-    t_batch = t_train[batch_mask]
+# for i in range(1000000000):
+#     batch_mask = np.random.choice(train_size, batch_size)
+#     x_batch = x_train[batch_mask]
+#     t_batch = t_train[batch_mask]
 
-    grads = network.gradient(x_batch, t_batch)
-    optimizer.update(network.params, grads)
+#     grads = network.gradient(x_batch, t_batch)
+#     optimizer.update(network.params, grads)
 
-    if i % iter_per_epoch == 0:
-        train_acc = network.accuracy(x_train, t_train)
-        test_acc = network.accuracy(x_test, t_test)
-        train_acc_list.append(train_acc)
-        test_acc_list.append(test_acc)
+#     if i % iter_per_epoch == 0:
+#         train_acc = network.accuracy(x_train, t_train)
+#         test_acc = network.accuracy(x_test, t_test)
+#         train_acc_list.append(train_acc)
+#         test_acc_list.append(test_acc)
 
-        print("epoch:" + str(epoch_cnt) + ", train acc:" + str(train_acc) + ", test acc:" + str(test_acc))
+#         print("epoch:" + str(epoch_cnt) + ", train acc:" + str(train_acc) + ", test acc:" + str(test_acc))
 
-        epoch_cnt += 1
-        if epoch_cnt >= max_epochs:
-            break
+#         epoch_cnt += 1
+#         if epoch_cnt >= max_epochs:
+#             break
 
 """
 Dropout
@@ -136,3 +137,19 @@ class Dropout:
     def backward(self, dout):
         return dout * self.mask
     
+"""
+ハイパーパラメータの検証
+"""
+# 検証データ、訓練データ、テストデータに分割
+(x_train, t_train), (x_test, t_test) = load_mnist(normalize=True)
+
+x_train, t_train = shuffle_dataset(x_train, t_train)
+
+# 検証データの分割
+validation_rate = 0.20
+validation_num = int(x_train.shape[0] * validation_rate)
+
+x_val = x_train[:validation_num]
+t_val = t_train[:validation_num]
+x_train = x_train[validation_num:]
+t_train = t_train[validation_num:]
