@@ -47,3 +47,46 @@ class Convolution:
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
 
         return dx
+    
+
+"""
+Poolingレイヤ
+"""
+class Pooling:
+    def __init__(self, pool_h, pool_w, stride=1, pad=0):
+        self.pool_h = pool_h # プーリングの高さ
+        self.pool_w = pool_w # プーリングの幅
+        self.stride = stride # ストライド
+        self.pad = pad # パディング
+
+    def forward(self, x):
+        N, C, H, W = x.shape
+        out_h = int(1 + (H - self.pool_h) / self.stride) # 出力データの高さ
+        out_w = int(1 + (W - self.pool_w) / self.stride) # 出力データの幅
+
+        # 展開
+        col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
+        col = col.reshape(-1, self.pool_h * self.pool_w)
+
+        # 最大値
+        out = np.max(col, axis=1) # 最大値を求める
+        # 整形
+        out = out.reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2) # 4次元配列に変換
+
+        self.x = x
+        self.arg_max = np.argmax(col, axis=1)
+
+        return out
+    
+    def backward(self, dout):
+        dout = dout.transpose(0, 2, 3, 1) # 4次元配列を2次元配列に変換
+
+        pool_size = self.pool_h * self.pool_w 
+        dmax = np.zeros((dout.size, pool_size)) # 0で初期化
+        dmax[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.flatten() # flatten()は多次元配列を1次元配列に変換
+        dmax = dmax.reshape(dout.shape + (pool_size,)) # 3次元配列に変換
+
+        dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1) # 2次元配列に変換
+        dx = col2im(dcol, self.x.shape, self.pool_h, self.pool_w, self.stride, self.pad) # 2次元配列を4次元配列に変換
+
+        return dx
